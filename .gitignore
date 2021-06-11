@@ -1,0 +1,6 @@
+games/
+__pycache__/
+nts/
+*.oob
+*.btl
+*.log
