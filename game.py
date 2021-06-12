@@ -8,6 +8,7 @@ import defs
 class UnitHistory:
     def __init__(self):
         self.name = None
+        self.turn = None
         self.x = None
         self.y = None
         self.toe = None
@@ -92,7 +93,7 @@ class Game:
 
         self.ReadBtlFileHeader(fname, fileh, sdata)
 
-        self.ReadBtlFileBody(fname, fileh)
+        self.ReadBtlFileBody(fname, fileh, sdata)
     
         return sdata
 
@@ -163,7 +164,7 @@ class Game:
         if not self.pdt_filename:
             self.pdt_filename = header_lines[14]
 
-    def ReadBtlFileBody(self, fname, fileh):
+    def ReadBtlFileBody(self, fname, fileh, sdata):
         while True:
             
             # Read a line and get the line code
@@ -177,7 +178,7 @@ class Game:
             if line_code==0:
                 break
             elif line_code==1:
-                self.ReadBTL_1(fname, line)
+                self.ReadBTL_1(fname, line, sdata)
             elif line_code==2:
                 pass
             elif line_code==3:
@@ -187,7 +188,7 @@ class Game:
             elif line_code==5:
                 pass
 
-    def ReadBTL_1(self, fname, line):
+    def ReadBTL_1(self, fname, line, sdata):
         UNIT_ID = int(line[3])
 
         if UNIT_ID not in self.units:
@@ -199,6 +200,7 @@ class Game:
 
         uh = UnitHistory()
         uh.name = fname
+        uh.turn = sdata['cur_turn']
         uh.x = int(line[1])
         uh.y = int(line[2])
         uh.toe = int(line[6])
@@ -215,15 +217,19 @@ class Game:
 
         self.units[UNIT_ID].AddHistory(uh)
 
-    def GetFormationDataByTurnRecursive(self, turn, ID):
+    def GetFormationData(self, ID):
 
         open_list = [ID]
         data = {
-            "strength":0,
-            "fatigue":0
+            "fnames":[],
+            "turn":{},
+            "strength":{},
+            "fatigue":{}
         }
-        strength=[]
-        fatigue=[]
+        fnames = []
+        turn ={}
+        strength = {}
+        fatigue = {}
 
         while len(open_list) > 0:
             nextID = open_list[0]
@@ -240,24 +246,37 @@ class Game:
                     max_strength = oobele.GetData('toe')
 
                     unit_hist = self.units[nextID].GetData('history')
-                    cur_strength = 0
-                    cur_fatigue = 0
-                    if len(unit_hist) > 0:
-                        cur_strength = unit_hist[turn].toe
-                        cur_fatigue = unit_hist[turn].fatigue
+                    
+                    for uh in unit_hist:
+                        cur_strength = uh.toe
+                        cur_fatigue = uh.fatigue
 
-                        if len(unit_hist[turn].combined_units) > 0:
-                            for u in unit_hist[turn].combined_units:
+                        if len(uh.combined_units) > 0:
+                            for u in uh.combined_units:
                                 comb_oobele = self.oob.GetElement(u)
                                 if not comb_oobele:
                                     print(u)
                                 max_strength += comb_oobele.GetData('toe')
 
-                    strength.append(cur_strength/max_strength)
-                    fatigue.append(cur_fatigue/defs.MAXIMUM_FATIGUE)
-        if len(strength) > 0:
-            data['strength']=sum(strength) / len(strength)
-        if len(fatigue) > 0:
-            data['fatigue']=sum(fatigue) / len(fatigue)
+                        cur_strength = cur_strength / max_strength
+                        cur_fatigue = cur_fatigue / defs.MAXIMUM_FATIGUE
+
+                        if uh.name not in fnames:
+                            fnames.append(uh.name)
+                            turn[uh.name] = uh.turn
+                            strength[uh.name] = [cur_strength]
+                            fatigue[uh.name] = [cur_fatigue]
+                        else:
+                            strength[uh.name].append(cur_strength)
+                            fatigue[uh.name].append(cur_fatigue)
+
+        if len(fnames) > 0:
+            data['fnames'] = sorted(fnames, reverse=True)
+            data['turn'] = turn
+            for k,v in strength.items():
+                data['strength'][k] = sum(v) / len(v)
+            for k,v in fatigue.items():
+                data['fatigue'][k] = sum(v) / len(v)
+
 
         return data
