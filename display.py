@@ -16,55 +16,9 @@ class Display(tk.Frame):
 
         self.BuildUI()
 
+
+
     def BuildUI(self):
-
-        self.BuildFormationTree()
-        self.BuildDataNotebook()
-
-    def BuildFormationTree(self):
-        style = ttk.Style(self)
-        style.configure('Treeview',indent=10)
-
-        self.form_tree = ttk.Treeview(self)
-        self.form_tree['columns'] = ('id', 'name')
-        self.form_tree['height'] = 30
-        self.form_tree['selectmode']='browse'
-        self.form_tree.column('#0',width=100)
-        self.form_tree.column('id',width=100)
-        self.form_tree.heading('id', text='ID')
-        self.form_tree.column('name',width=200)
-        self.form_tree.heading('name', text='NAME')
-
-        oob = self.game.oob
-        nodelist = oob.tree
-
-        self.AddToTree(nodelist)
-
-        self.form_tree.bind('<<TreeviewSelect>>', self.DisplayOOBElementInfo)
-        self.form_tree.pack(side=tk.LEFT, fill=tk.BOTH)
-
-    # Recursive function that adds all the formations/units
-    # To the tree.
-    def AddToTree(self, nodelist):
-        for node in nodelist:
-
-            unit = self.game.oob.elements[node.GetID()]
-
-            if unit.GetData('side') != self.game.side:
-                continue
-
-            pid = ''
-            if node.parent:
-                pid = node.parent.GetID()
-
-
-            unitname = unit.GetData('name')
-
-            self.form_tree.insert(pid,'end',node.GetID(),values=(node.GetID(),unitname))
-
-            self.AddToTree(node.GetChildren())
-
-    def BuildDataNotebook(self):
         self.notebook = ttk.Notebook(self)
 
         fwidth = 500
@@ -87,6 +41,7 @@ class Display(tk.Frame):
         self.BuildNotebookUnitInfoTab()
         
         self.DisplayScenInfo()
+        self.BuildFormationTree()
 
     def BuildNotebookScenInfoTab(self):
         px=5
@@ -102,7 +57,7 @@ class Display(tk.Frame):
 
         self.tvLosses = ttk.Treeview(self.frame_sceninfo)
         self.tvLosses['columns'] = ('file', 'turn', 'men', 'guns', 'vehicles', 'air', 'naval')
-        self.tvLosses['height'] = 10
+        self.tvLosses['height'] = 20
         self.tvLosses['selectmode'] = 'browse'
         self.tvLosses.column('#0',width=5)
         self.tvLosses.column('file', width=100, anchor=tk.CENTER)
@@ -133,17 +88,38 @@ class Display(tk.Frame):
         self.eID = tk.Entry(self.frame_unitinfo)
         self.eNation = tk.Entry(self.frame_unitinfo)
 
-        self.lName.grid(row=0, column=0, sticky=tk.W, padx=px, pady=py)
-        self.lID.grid(row=1, column=0, sticky=tk.W, padx=px, pady=py)
-        self.lNation.grid(row=2, column=0, sticky=tk.W, padx=px, pady=py)
+        self.lName.grid(row=0, column=1, sticky=tk.W, padx=px, pady=py)
+        self.lID.grid(row=1, column=1, sticky=tk.W, padx=px, pady=py)
+        self.lNation.grid(row=2, column=1, sticky=tk.W, padx=px, pady=py)
 
-        self.eName.grid(row=0, column=1, sticky=tk.W, padx=px, pady=py)
-        self.eID.grid(row=1, column=1, sticky=tk.W, padx=px, pady=py)
-        self.eNation.grid(row=2, column=1, sticky=tk.W, padx=px, pady=py)
+        self.eName.grid(row=0, column=2, sticky=tk.W, padx=px, pady=py)
+        self.eID.grid(row=1, column=2, sticky=tk.W, padx=px, pady=py)
+        self.eNation.grid(row=2, column=2, sticky=tk.W, padx=px, pady=py)
+
+        style = ttk.Style(self)
+        style.configure('Treeview',indent=10)
+
+        self.form_tree = ttk.Treeview(self.frame_unitinfo)
+        self.form_tree['columns'] = ('id', 'name')
+        self.form_tree['height'] = 30
+        self.form_tree['selectmode']='browse'
+        self.form_tree.column('#0',width=100)
+        self.form_tree.column('id',width=100)
+        self.form_tree.heading('id', text='ID')
+        self.form_tree.column('name',width=200)
+        self.form_tree.heading('name', text='NAME')
+
+        oob = self.game.oob
+        nodelist = oob.tree
+
+        self.AddToTree(nodelist)
+
+        self.form_tree.bind('<<TreeviewSelect>>', self.DisplayOOBElementInfo)
+        self.form_tree.grid(row=0,column=0,rowspan=20,padx=px,pady=py)
 
         self.tvHistory = ttk.Treeview(self.frame_unitinfo)
         self.tvHistory['columns'] = ('file', 'turn', 'strength', 'fatigue')
-        self.tvHistory['height'] = 10
+        self.tvHistory['height'] = 15
         self.tvHistory['selectmode'] = 'browse'
         self.tvHistory.column('#0',width=10)
         self.tvHistory.column('file',width=200,anchor=tk.CENTER)
@@ -154,7 +130,7 @@ class Display(tk.Frame):
         self.tvHistory.heading('strength', text='STRENGTH')
         self.tvHistory.column('fatigue',width=100,anchor=tk.CENTER)
         self.tvHistory.heading('fatigue', text='FATIGUE')
-        self.tvHistory.grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=px, pady=py)
+        self.tvHistory.grid(row=3, column=1, columnspan=4, sticky=tk.W, padx=px, pady=py)
 
     def DisplayScenInfo(self):
         
@@ -175,7 +151,32 @@ class Display(tk.Frame):
             self.tvLosses.insert('','end',values=(file, turn, men, guns, vehicles, air, naval))
 
             
+    def BuildFormationTree(self):
+        px=5
+        py=5
 
+        
+
+    # Recursive function that adds all the formations/units
+    # To the tree.
+    def AddToTree(self, nodelist):
+        for node in nodelist:
+
+            unit = self.game.oob.elements[node.GetID()]
+
+            if unit.GetData('side') != self.game.side:
+                continue
+
+            pid = ''
+            if node.parent:
+                pid = node.parent.GetID()
+
+
+            unitname = unit.GetData('name')
+
+            self.form_tree.insert(pid,'end',node.GetID(),values=(node.GetID(),unitname))
+
+            self.AddToTree(node.GetChildren())
             
 
     def DisplayOOBElementInfo(self, NOTUSEDPARAM):

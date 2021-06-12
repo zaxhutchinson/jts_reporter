@@ -5,6 +5,7 @@
 * Changes formation display to be side dependent. Will only display formations that belong to the side specified in the config.ini
 * Changes info tab to unit info tab.
 * Adds scen info tab which will display scenario level information, e.g. losses.
+* Moves the unit selection view into the unit info tab
 
 **Version 0.00**
 * Initial Version
