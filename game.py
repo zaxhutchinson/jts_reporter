@@ -49,7 +49,7 @@ class ScenData:
 
 
 class Game:
-    def __init__(self, directory):
+    def __init__(self, directory, side):
         self.directory = directory
         self.scenario_name = None
         self.map_filename = None
@@ -59,6 +59,7 @@ class Game:
         self.oob = None
         self.units = {}
         self.scen_data = {}
+        self.side = side
 
         self.ReadGameFiles()
 
@@ -75,7 +76,7 @@ class Game:
                 if entry.is_file():
                     file_extension = entry.name[-4:]
                     if file_extension=='.oob':
-                        self.oob = oob.OOB(entry.path)
+                        self.oob = oob.OOB(entry.path, self.side)
                     elif file_extension=='.btl':
                         save_files.append(
                             (entry.name[:-4],entry.path)
@@ -86,6 +87,7 @@ class Game:
         for f in save_files:
             fileh = open(f[1], 'r')
             sdata = self.ReadBtlFile(f[0], fileh)
+            self.scen_data[f[0]]=sdata
             fileh.close()
                     
     def ReadBtlFile(self, fname, fileh):
@@ -102,6 +104,8 @@ class Game:
         for i in range(15):
             header_lines.append(fileh.readline().strip())
         
+        sdata['fname'] = fname
+
         # LINE 1
         # I do not know what the first line is. Just an int.
         # Left as a string
@@ -139,15 +143,35 @@ class Game:
         sdata['supply0'] = int(splt[2])
         sdata['supply1'] = int(splt[3])
 
-        # LINE 6 - 12
+        # LINE 6 - 8
         # I haven't figured out what these are. Will
         # separate them out as I do.
         sdata['unknown_6_0'] = header_lines[5]
         sdata['unknown_7_0'] = header_lines[6]
         sdata['unknown_8_0'] = header_lines[7]
-        sdata['unknown_9_0'] = header_lines[8]
+
+        # LINE 9
+        splt = header_lines[8].split()
+        sdata['p0_loss_men'] = int(splt[0])
+        sdata['p0_loss_guns'] = int(splt[1])
+        sdata['p0_loss_vehicles'] = int(splt[2])
+        sdata['p0_loss_air'] = int(splt[3])
+        sdata['p0_loss_unknown'] = int(splt[4])
+        sdata['p0_loss_naval'] = int(splt[5])
+        
+        # LINE 10
         sdata['unknown_10_0'] = header_lines[9]
-        sdata['unknown_11_0'] = header_lines[10]
+
+        # LINE 11
+        splt = header_lines[10].split()
+        sdata['p1_loss_men'] = int(splt[0])
+        sdata['p1_loss_guns'] = int(splt[1])
+        sdata['p1_loss_vehicles'] = int(splt[2])
+        sdata['p1_loss_air'] = int(splt[3])
+        sdata['p1_loss_unknown'] = int(splt[4])
+        sdata['p1_loss_naval'] = int(splt[5])
+
+        # LINE 12
         sdata['unknown_12_0'] = header_lines[11]
 
         # LINE 13
@@ -237,11 +261,11 @@ class Game:
 
             oobele = self.oob.GetElement(nextID)
                 
-            if oobele.GetData('etype')==oob.EType.FORMATION:
+            if oobele.GetData('etype')==defs.EType.FORMATION:
                 if len(oobele.GetData('CIDS')) > 0:
                     open_list = open_list + oobele.GetData('CIDS')
                 
-            elif oobele.GetData('etype')==oob.EType.UNIT:
+            elif oobele.GetData('etype')==defs.EType.UNIT:
                 if nextID in self.units:
                     max_strength = oobele.GetData('toe')
 
@@ -278,5 +302,37 @@ class Game:
             for k,v in fatigue.items():
                 data['fatigue'][k] = sum(v) / len(v)
 
+
+        return data
+
+    def GetLossData(self):
+        data = {
+            'fnames' : [],
+            'turns' : {},
+            'men' : {},
+            'vehicles' : {},
+            'guns' : {},
+            'air' : {},
+            'naval' : {}
+        }
+
+        for k,v in self.scen_data.items():
+            data['fnames'].append(k)
+            data['turns'][k] = v['cur_turn']
+
+            if self.side == defs.Side.ALLIES:
+                data['men'][k] = v['p0_loss_men']
+                data['guns'][k] = v['p0_loss_guns']
+                data['vehicles'][k] = v['p0_loss_vehicles']
+                data['air'][k] = v['p0_loss_air']
+                data['naval'][k] = v['p0_loss_naval']
+            elif self.side == defs.Side.AXIS:
+                data['men'][k] = v['p1_loss_men']
+                data['guns'][k] = v['p1_loss_guns']
+                data['vehicles'][k] = v['p1_loss_vehicles']
+                data['air'][k] = v['p1_loss_air']
+                data['naval'][k] = v['p1_loss_naval']
+
+        data['fnames'] = sorted(data['fnames'], reverse=True)
 
         return data

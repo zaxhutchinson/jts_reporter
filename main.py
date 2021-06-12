@@ -3,12 +3,15 @@ import game
 import logging
 import display
 import tkinter as tk
+import defs
+import cfg
 
 def main():
     #----------------------------------
     # VARIABLES
     gamedir = None
     mygame = None
+    
     #----------------------------------
     # SET UP THE LOGGER
     LGFORMAT = '%(levelname)s   %(message)s'
@@ -18,6 +21,24 @@ def main():
         filemode='w',
         format=LGFORMAT
     )
+
+    #----------------------------------
+    # Load config file
+    config = cfg.Cfg(defs.CONFIG_FILE)
+
+    #----------------------------------
+    # Set side
+    sidename = config.GetCfg('general', 'side')
+    side = None
+    if sidename.lower() == 'axis':
+        side = defs.Side.AXIS
+    elif sidename.lower() == 'allies':
+        side = defs.Side.ALLIES
+    else:
+        logging.error('Side entry in config file is invalid. Quitting.')
+        return
+
+    
 
     #----------------------------------
     # Read command line args
@@ -33,7 +54,7 @@ def main():
     #-----------------------------------
     # Load game files we have a directory
     if gamedir:
-        mygame = game.Game(gamedir)
+        mygame = game.Game(gamedir, side)
     else:
         logging.error("MAIN: missing game directory")
         print("Missing game directory.")
@@ -41,7 +62,7 @@ def main():
     #-----------------------------------
     # Start UI
     root = tk.Tk()
-    ui = display.Display(root, mygame)
+    ui = display.Display(root, mygame, config)
     ui.Run()
 
     #-----------------------------------

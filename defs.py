@@ -1,4 +1,8 @@
+import enum
+
 VERSION=0.01
+
+CONFIG_FILE = 'config.ini'
 
 MAXIMUM_FATIGUE = 300.0
 
@@ -44,7 +48,13 @@ ABBRV_LIST = {
     'FT':'???'
 }
 
+class EType(enum.Enum):
+    FORMATION=0,
+    UNIT=1
 
+class Side(enum.Enum):
+    ALLIES=0,
+    AXIS=1
 
 AXIS= [
     'Austro-Hungarian',

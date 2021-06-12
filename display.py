@@ -1,13 +1,15 @@
 import tkinter as tk
+from tkinter.constants import ANCHOR
 import tkinter.ttk as ttk
 
 import defs
 
 class Display(tk.Frame):
-    def __init__(self, master, game):
+    def __init__(self, master, game, config):
         super().__init__(master)
 
         self.game = game
+        self.config = config
 
         self.pack()
         self.master.title('JTS Reporter v' + str(defs.VERSION))
@@ -45,11 +47,17 @@ class Display(tk.Frame):
     # To the tree.
     def AddToTree(self, nodelist):
         for node in nodelist:
+
+            unit = self.game.oob.elements[node.GetID()]
+
+            if unit.GetData('side') != self.game.side:
+                continue
+
             pid = ''
             if node.parent:
                 pid = node.parent.GetID()
 
-            unit = self.game.oob.elements[node.GetID()]
+
             unitname = unit.GetData('name')
 
             self.form_tree.insert(pid,'end',node.GetID(),values=(node.GetID(),unitname))
@@ -61,48 +69,79 @@ class Display(tk.Frame):
 
         fwidth = 500
         fheight = 500
-        self.frame_info = tk.Frame(self.notebook, width=fwidth, height=fheight)
+        self.frame_sceninfo = tk.Frame(self.notebook, width=fwidth, height=fheight)
+        self.frame_unitinfo = tk.Frame(self.notebook, width=fwidth, height=fheight)
         self.frame_map = tk.Frame(self.notebook, width=fheight, height=fheight)
 
-        self.frame_info.pack(side=tk.LEFT,fill=tk.BOTH)
+        self.frame_sceninfo.pack(side=tk.LEFT, fill=tk.BOTH)
+        self.frame_unitinfo.pack(side=tk.LEFT,fill=tk.BOTH)
         self.frame_map.pack(side=tk.LEFT,fill=tk.BOTH)
 
-        self.notebook.add(self.frame_info, text="Info")
+        self.notebook.add(self.frame_sceninfo, text="Scen Info")
+        self.notebook.add(self.frame_unitinfo, text="Unit Info")
         self.notebook.add(self.frame_map, text="Map")
 
         self.notebook.pack(side=tk.RIGHT,fill=tk.BOTH)
 
-        self.BuildNotebookInfoTab()
+        self.BuildNotebookScenInfoTab()
+        self.BuildNotebookUnitInfoTab()
+        
+        self.DisplayScenInfo()
 
-    def BuildNotebookInfoTab(self):
+    def BuildNotebookScenInfoTab(self):
         px=5
         py=5
 
-        self.lName = tk.Label(self.frame_info, text='Name: ')
-        self.lID = tk.Label(self.frame_info, text='ID: ')
-        self.lNation = tk.Label(self.frame_info, text='Nation: ')
-        # self.lStrength = tk.Label(self.frame_info, text='Strength: ')
-        # self.lFatigue = tk.Label(self.frame_info, text='Fatigue: ')
+        self.lScenName = tk.Label(self.frame_sceninfo, text='Scenario Name:')
 
-        self.eName = tk.Entry(self.frame_info)
-        self.eID = tk.Entry(self.frame_info)
-        self.eNation = tk.Entry(self.frame_info)
-        # self.eStrength = tk.Entry(self.frame_info)
-        # self.eFatigue = tk.Entry(self.frame_info)
+        self.eScenName = tk.Entry(self.frame_sceninfo, width=60)
+
+        self.lScenName.grid(row=0, column=0, sticky=tk.W, padx=px, pady=py)
+
+        self.eScenName.grid(row=0, column=1, sticky=tk.W, padx=px, pady=py)
+
+        self.tvLosses = ttk.Treeview(self.frame_sceninfo)
+        self.tvLosses['columns'] = ('file', 'turn', 'men', 'guns', 'vehicles', 'air', 'naval')
+        self.tvLosses['height'] = 10
+        self.tvLosses['selectmode'] = 'browse'
+        self.tvLosses.column('#0',width=5)
+        self.tvLosses.column('file', width=100, anchor=tk.CENTER)
+        self.tvLosses.heading('file', text='FILE')
+        self.tvLosses.column('turn', width=70, anchor=tk.CENTER)
+        self.tvLosses.heading('turn', text='TURN')
+        self.tvLosses.column('men', width=70, anchor=tk.CENTER)
+        self.tvLosses.heading('men', text='MEN')
+        self.tvLosses.column('guns', width=70, anchor=tk.CENTER)
+        self.tvLosses.heading('guns', text='GUNS')
+        self.tvLosses.column('vehicles', width=70, anchor=tk.CENTER)
+        self.tvLosses.heading('vehicles', text='VEHICLES')
+        self.tvLosses.column('air', width=70, anchor=tk.CENTER)
+        self.tvLosses.heading('air', text='AIR')
+        self.tvLosses.column('naval', width=70, anchor=tk.CENTER)
+        self.tvLosses.heading('naval', text='NAVAL')
+        self.tvLosses.grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=px, pady=py)
+
+    def BuildNotebookUnitInfoTab(self):
+        px=5
+        py=5
+
+        self.lName = tk.Label(self.frame_unitinfo, text='Name: ')
+        self.lID = tk.Label(self.frame_unitinfo, text='ID: ')
+        self.lNation = tk.Label(self.frame_unitinfo, text='Nation: ')
+
+        self.eName = tk.Entry(self.frame_unitinfo)
+        self.eID = tk.Entry(self.frame_unitinfo)
+        self.eNation = tk.Entry(self.frame_unitinfo)
 
         self.lName.grid(row=0, column=0, sticky=tk.W, padx=px, pady=py)
         self.lID.grid(row=1, column=0, sticky=tk.W, padx=px, pady=py)
         self.lNation.grid(row=2, column=0, sticky=tk.W, padx=px, pady=py)
-        # self.lStrength.grid(row=0, column=3, sticky=tk.W)
-        # self.lFatigue.grid(row=1, column=3, sticky=tk.W)
 
         self.eName.grid(row=0, column=1, sticky=tk.W, padx=px, pady=py)
         self.eID.grid(row=1, column=1, sticky=tk.W, padx=px, pady=py)
         self.eNation.grid(row=2, column=1, sticky=tk.W, padx=px, pady=py)
-        # self.eStrength.grid(row=0, column=4, sticky=tk.W)
-        # self.eFatigue.grid(row=1, column=4, sticky=tk.W)
 
-        self.tvHistory = ttk.Treeview(self.frame_info)
+        self.tvHistory = ttk.Treeview(self.frame_unitinfo)
         self.tvHistory['columns'] = ('file', 'turn', 'strength', 'fatigue')
         self.tvHistory['height'] = 10
         self.tvHistory['selectmode'] = 'browse'
@@ -116,6 +155,28 @@ class Display(tk.Frame):
         self.tvHistory.column('fatigue',width=100,anchor=tk.CENTER)
         self.tvHistory.heading('fatigue', text='FATIGUE')
         self.tvHistory.grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=px, pady=py)
+
+    def DisplayScenInfo(self):
+        
+        self.SetText(self.eScenName, self.game.scenario_name)
+
+        scen_data = self.game.GetLossData()
+        
+        for name in scen_data['fnames']:
+
+            file = name
+            turn = f"{scen_data['turns'][name]}"
+            men = f"{scen_data['men'][name]}"
+            guns = f"{scen_data['guns'][name]}"
+            vehicles = f"{scen_data['vehicles'][name]}"
+            air = f"{scen_data['air'][name]}"
+            naval = f"{scen_data['naval'][name]}"
+
+            self.tvLosses.insert('','end',values=(file, turn, men, guns, vehicles, air, naval))
+
+            
+
+            
 
     def DisplayOOBElementInfo(self, NOTUSEDPARAM):
         s = self.form_tree.selection()
@@ -151,3 +212,8 @@ class Display(tk.Frame):
 
     def Run(self):
         self.mainloop()
+
+
+
+#------------------------------------------------------------------------------
+# 

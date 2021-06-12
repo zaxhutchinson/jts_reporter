@@ -3,13 +3,7 @@ import string
 
 import defs
 
-class EType(enum.Enum):
-    FORMATION=0,
-    UNIT=1
 
-class Side(enum.Enum):
-    ALLIES=0,
-    AXIS=1
 
 class OOBElement:
     def __init__( self, _data={}):
@@ -42,11 +36,12 @@ class OOBTreeNode:
         return self.children
 
 class OOB:
-    def __init__(self, filename):
+    def __init__(self, filename, side):
         self.filename = filename
         self.data = {}
         self.elements = {}
         self.tree = []
+        self.side = side
         # Parse the oob file.
         self.ReadOOBFile()
 
@@ -136,14 +131,21 @@ class OOB:
 
                         ftype = ftype[:-1]
 
-                        data['etype'] = EType.UNIT
+                        data['etype'] = defs.EType.UNIT
                         data['ftype'] = ftype
                         data['nation'] = nation[-1]
 
                         if data['nation'] in defs.ALLIES:
-                            data['side'] = Side.ALLIES
+                            data['side'] = defs.Side.ALLIES
                         elif data['nation'] in defs.AXIS:
-                            data['side'] = Side.AXIS
+                            data['side'] = defs.Side.AXIS
+
+                        # Hacky but important.
+                        # If the side of this unit/formation does
+                        # not match the side the user wants to
+                        # see stop processing this line.
+                        # if data['side'] != self.side:
+                        #     continue
 
                         data['ID'] = int(splt_line[0])
                         data['unit_type'] = splt_line[1]
@@ -168,14 +170,16 @@ class OOB:
                         data['name'] = splt_names[0].strip()
                         data['equip_name'] = splt_names[1].split()
                         data['PID'] = parent_ids[-1]
-                        self.GetElement(data['PID']).GetData('CIDS').append(data['ID'])
 
+
+
+                        self.GetElement(data['PID']).GetData('CIDS').append(data['ID'])
                         unit_treenode = OOBTreeNode(data['ID'], treenode, nation[-1])
                         treenode.AddChildren(unit_treenode)
                     # else formation
                     else:
                         
-                        data['etype'] = EType.FORMATION
+                        data['etype'] = defs.EType.FORMATION
 
                         if treenode==None or len(ftype.split())>1:
                             data['ftype'] = ftype.split()[1]
@@ -185,6 +189,19 @@ class OOB:
                             nation.append(nation[-1])
 
                         data['nation'] = nation[-1]
+
+                        if data['nation'] in defs.ALLIES:
+                            data['side'] = defs.Side.ALLIES
+                        elif data['nation'] in defs.AXIS:
+                            data['side'] = defs.Side.AXIS
+
+                        # Hacky but important.
+                        # If the side of this unit/formation does
+                        # not match the side the user wants to
+                        # see stop processing this line.
+                        # if data['side'] != self.side:
+                        #     continue
+
                         data['ID'] = int(splt_line[0])
                         try:
                             data['unknown0'] = int(splt_line[1])

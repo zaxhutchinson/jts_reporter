@@ -1,5 +1,10 @@
 **Version 0.01**
-* Strength and fatigue for a formation are now displayed for all files found in the directory. Displays the file name and the turn.
+* Info tab: Strength and fatigue are now displayed for all files found in the directory. Displays the file name and the turn.
+* Adds config file.
+* Adds side entry to config file. Must be 'axis' or 'allies'.
+* Changes formation display to be side dependent. Will only display formations that belong to the side specified in the config.ini
+* Changes info tab to unit info tab.
+* Adds scen info tab which will display scenario level information, e.g. losses.
 
 **Version 0.00**
 * Initial Version
