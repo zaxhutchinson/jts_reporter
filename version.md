@@ -1,3 +1,7 @@
+**Version 0.02**
+* First version with a build.
+* Reworked file structure for building with pyinstaller.
+
 **Version 0.01**
 * Info tab: Strength and fatigue are now displayed for all files found in the directory. Displays the file name and the turn.
 * Adds config file.

@@ -1,6 +1,11 @@
-games/
+saves/
 __pycache__/
 nts/
+build/
+dist/
+.vscode/
+
 *.oob
 *.btl
 *.log
+*.spec

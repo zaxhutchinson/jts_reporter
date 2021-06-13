@@ -1,10 +1,11 @@
 import sys
-import game
 import logging
-import display
 import tkinter as tk
-import defs
-import cfg
+
+from jtsr import defs
+from jtsr import cfg
+from jtsr import game
+from jtsr import display
 
 def main():
     #----------------------------------
@@ -56,8 +57,12 @@ def main():
     if gamedir:
         mygame = game.Game(gamedir, side)
     else:
-        logging.error("MAIN: missing game directory")
-        print("Missing game directory.")
+        gamedir = config.GetCfg('general','save_dir')
+        if gamedir:
+            mygame = game.Game(gamedir, side)
+        else:
+            logging.error("MAIN: missing game directory")
+            print("Missing game directory.")
 
     #-----------------------------------
     # Start UI

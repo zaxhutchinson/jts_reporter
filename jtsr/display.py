@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter.constants import ANCHOR
 import tkinter.ttk as ttk
 
-import defs
+from jtsr import defs
 
 class Display(tk.Frame):
     def __init__(self, master, game, config):
@@ -12,7 +12,8 @@ class Display(tk.Frame):
         self.config = config
 
         self.pack()
-        self.master.title('JTS Reporter v' + str(defs.VERSION))
+        version = self.config.GetCfg('general','version')
+        self.master.title('JTS Reporter v' + version)
 
         self.BuildUI()
 

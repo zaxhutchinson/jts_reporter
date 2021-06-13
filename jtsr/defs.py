@@ -1,7 +1,5 @@
 import enum
 
-VERSION=0.01
-
 CONFIG_FILE = 'config.ini'
 
 MAXIMUM_FATIGUE = 300.0
