@@ -1,3 +1,4 @@
 del dist\jtsrep.log
-pyinstaller start.py --name jtsreporter --onefile
-copy jtsr\config.ini dist\config.ini
+pyinstaller start.py --name jtsreporter --onefile --distpath jtsreporter
+copy jtsr\config.ini jtsreporter\config.ini
+powershell "Compress-Archive -Force jtsreporter jtsreporter.zip"
