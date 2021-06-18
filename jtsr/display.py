@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter.constants import ANCHOR
 import tkinter.ttk as ttk
+import matplotlib.pyplot as plt
+import matplotlib.figure as figure
+import matplotlib.backends.backend_tkagg as tkagg
 
 from jtsr import defs
 
@@ -42,7 +45,6 @@ class Display(tk.Frame):
         self.BuildNotebookUnitInfoTab()
         
         self.DisplayScenInfo()
-        self.BuildFormationTree()
 
     def BuildNotebookScenInfoTab(self):
         px=5
@@ -58,7 +60,7 @@ class Display(tk.Frame):
 
         self.tvLosses = ttk.Treeview(self.frame_sceninfo)
         self.tvLosses['columns'] = ('file', 'turn', 'men', 'guns', 'vehicles', 'air', 'naval')
-        self.tvLosses['height'] = 20
+        self.tvLosses['height'] = 25
         self.tvLosses['selectmode'] = 'browse'
         self.tvLosses.column('#0',width=5)
         self.tvLosses.column('file', width=100, anchor=tk.CENTER)
@@ -75,7 +77,41 @@ class Display(tk.Frame):
         self.tvLosses.heading('air', text='AIR')
         self.tvLosses.column('naval', width=70, anchor=tk.CENTER)
         self.tvLosses.heading('naval', text='NAVAL')
-        self.tvLosses.grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=px, pady=py)
+        self.tvLosses.grid(row=1, column=0, columnspan=2, sticky=tk.W, padx=px, pady=py)
+
+
+        #==================================================
+        # LOSS FRAME
+        self.frame_scen_graph = ttk.LabelFrame(self.frame_sceninfo, text="GRAPH",width=650,height=600)
+        self.frame_scen_graph.grid_propagate(False)
+        self.frame_scen_graph.grid(row=0, column=2, rowspan=2,columnspan=2, sticky=tk.W, padx=px, pady=py)
+
+        # Holder for the pyplot figures. Allowing us to close them.
+        self.loss_fig = None
+
+        #==================================================
+        #BUTTONS and other functionality
+
+        self.frame_scen_btns = ttk.LabelFrame(self.frame_sceninfo, text="Loss",width=1000,height=200)
+        self.frame_scen_btns.grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=px, pady=py)
+
+        self.radbtnLossVar = tk.StringVar()
+        self.radbtnLossMen = tk.Radiobutton(self.frame_scen_btns, text="Men", variable=self.radbtnLossVar, value="men")
+        self.radbtnLossGuns = tk.Radiobutton(self.frame_scen_btns, text="Guns", variable=self.radbtnLossVar, value="guns")
+        self.radbtnLossVehicles = tk.Radiobutton(self.frame_scen_btns, text="Vehicles", variable=self.radbtnLossVar, value="vehicles")
+        self.radbtnLossAir = tk.Radiobutton(self.frame_scen_btns, text="Air", variable=self.radbtnLossVar, value="air")
+        self.radbtnLossNaval = tk.Radiobutton(self.frame_scen_btns, text="Naval", variable=self.radbtnLossVar, value="naval")
+        self.radbtnLossMen.grid(row=0,column=0, sticky=tk.W, padx=px, pady=py)
+        self.radbtnLossGuns.grid(row=1, column=0, sticky=tk.W, padx=px, pady=py)
+        self.radbtnLossVehicles.grid(row=2, column=0, sticky=tk.W, padx=px, pady=py)
+        self.radbtnLossAir.grid(row=3, column=0, sticky=tk.W, padx=px, pady=py)
+        self.radbtnLossNaval.grid(row=4, column=0, sticky=tk.W, padx=px, pady=py)
+        self.radbtnLossMen.select()
+        
+        self.btnLosses = tk.Button(self.frame_scen_btns, text="Graph", command=self.GraphLosses)
+        self.btnLosses.grid(row=5, column=0, sticky=tk.W, padx=px, pady=py)
+
+
 
     def BuildNotebookUnitInfoTab(self):
         px=5
@@ -152,9 +188,41 @@ class Display(tk.Frame):
             self.tvLosses.insert('','end',values=(file, turn, men, guns, vehicles, air, naval))
 
             
-    def BuildFormationTree(self):
-        px=5
-        py=5
+    def GraphLosses(self):
+
+        # If a figure is already displayed, close it.
+        if(self.loss_fig):
+            plt.close(self.loss_fig)
+        
+        scen_data = self.game.GetLossData()
+
+        loss_selection = self.radbtnLossVar.get()
+        
+        yaxis = []
+        xaxis = []
+        delta = []
+
+        prev = 0
+        for name in sorted(scen_data['fnames']):
+            xaxis.append(scen_data['turns'][name])
+            yaxis.append(scen_data[loss_selection][name])
+            delta.append(scen_data[loss_selection][name] - prev)
+            prev=scen_data[loss_selection][name]
+
+        self.loss_fig = figure.Figure(figsize=(6,5))
+        ax = self.loss_fig.add_subplot()
+        ax.set_xlabel("TURNS")
+        ax.set_ylabel(loss_selection.upper())
+        ax.plot(xaxis, yaxis, linewidth=1, color='#33bb33')
+        ax.plot(xaxis, delta, linewidth=1, linestyle='--', color='#555555')
+        ax.legend(['Loss','Change'])
+        ax.set_title(f"Losses {loss_selection}")
+
+        self.loss_canvas = tkagg.FigureCanvasTkAgg(self.loss_fig, master=self.frame_scen_graph)
+        self.loss_canvas.draw()
+        self.loss_canvas.get_tk_widget().grid(row=0, column=0, sticky=tk.W)
+
+
 
         
 

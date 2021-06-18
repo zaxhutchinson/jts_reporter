@@ -1,3 +1,6 @@
+**Version 0.03**
+* Adds the ability to graph scenario losses using matplotlib. 
+
 **Version 0.02**
 * First version with a build.
 * Reworked file structure for building with pyinstaller.
