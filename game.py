@@ -2,8 +2,8 @@ import os
 import logging as lg
 import math
 
-from jtsr import oob
-from jtsr import defs
+import oob
+import defs
 
 class UnitHistory:
     def __init__(self):

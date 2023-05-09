@@ -2,10 +2,10 @@ import sys
 import logging
 import tkinter as tk
 
-from jtsr import defs
-from jtsr import cfg
-from jtsr import game
-from jtsr import display
+import defs
+import cfg
+import game
+import display
 
 def main():
     #----------------------------------

@@ -34,6 +34,9 @@ class Display(tk.Frame):
 
         self.BuildUI()
 
+    def __del__(self):
+        plt.close('all')
+
 
     def BuildUI(self):
         self.notebook = ttk.Notebook(self)
@@ -204,9 +207,9 @@ class Display(tk.Frame):
     def GraphLosses(self):
 
         # If a figure is already displayed, close it.
-        # if(self.loss_fig):
-        #     plt.close(self.loss_fig)
-        #     self.loss_fig = None
+        if(self.loss_fig):
+            plt.close(self.loss_fig)
+            self.loss_fig = None
         
         scen_data = self.game.GetLossData()
 
@@ -249,22 +252,22 @@ class Display(tk.Frame):
         # fig = px.line(x=xaxis, y=yaxis, labels={'x':'Turn', 'y':'Losses (Total)'})
         # fig.show()
 
-        self.loss_fig = psubs.make_subplots(specs=[[{'secondary_y': True}]])
+        fig = psubs.make_subplots(specs=[[{'secondary_y': True}]])
 
-        self.loss_fig.add_trace(
+        fig.add_trace(
             go.Scatter(x=xaxis, y=yaxis, name='Losses (Total)'),
             secondary_y=False
         )
 
-        self.loss_fig.add_trace(
+        fig.add_trace(
             go.Scatter(x=xaxis, y=delta, name='Losses (Per Turn)'),
             secondary_y=True
         )
 
-        self.loss_fig.update_xaxes(title_text='Turn')
-        self.loss_fig.update_yaxes(title_text='Losses (Total)', secondary_y=False)
-        self.loss_fig.update_yaxes(title_text='Losses (Per Turn)', secondary_y=True)
-        self.loss_fig.show()
+        fig.update_xaxes(title_text='Turn')
+        fig.update_yaxes(title_text='Losses (Total)', secondary_y=False)
+        fig.update_yaxes(title_text='Losses (Per Turn)', secondary_y=True)
+        fig.show()
 
 
         ###############################################################

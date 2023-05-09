@@ -1,7 +1,7 @@
 import enum
 import string
 
-from jtsr import defs
+import defs
 
 
 
