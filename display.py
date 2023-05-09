@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter.constants import ANCHOR
 import tkinter.ttk as ttk
-import matplotlib.pyplot as plt
-import matplotlib.figure as figure
-import matplotlib.backends.backend_tkagg as tkagg
+# import matplotlib.pyplot as plt
+# import matplotlib.figure as figure
+# import matplotlib.backends.backend_tkagg as tkagg
 
 import plotly.express as px
 import plotly.subplots as psubs
@@ -33,9 +33,6 @@ class Display(tk.Frame):
         self.master.title('JTS Reporter v' + version)
 
         self.BuildUI()
-
-    def __del__(self):
-        plt.close('all')
 
 
     def BuildUI(self):
@@ -207,9 +204,9 @@ class Display(tk.Frame):
     def GraphLosses(self):
 
         # If a figure is already displayed, close it.
-        if(self.loss_fig):
-            plt.close(self.loss_fig)
-            self.loss_fig = None
+        # if(self.loss_fig):
+        #     plt.close(self.loss_fig)
+        #     self.loss_fig = None
         
         scen_data = self.game.GetLossData()
 
@@ -226,58 +223,22 @@ class Display(tk.Frame):
             delta.append(scen_data[loss_selection][name] - prev)
             prev=scen_data[loss_selection][name]
 
+        self.loss_fig = psubs.make_subplots(specs=[[{'secondary_y': True}]])
 
-
-        ###############################################################
-        # MATPLOTLIB VERSION
-        # self.loss_fig,ax1 = plt.subplots()
-        # ax1_color = 'black'
-        # ax1.set_xlabel('Turn')
-        # ax1.set_ylabel('Losses (Total)',color=ax1_color)
-        # ax1.plot(xaxis,yaxis,linewidth=1,color=ax1_color)
-        # ax1.tick_params(axis='y',labelcolor=ax1_color)
-
-        # ax2 = ax1.twinx()
-
-        # ax2_color = 'tab:red'
-        # ax2.set_ylabel('Losses (Per Turn)',color=ax2_color)
-        # ax2.plot(xaxis, delta, linewidth=1, color=ax2_color)
-        # ax2.tick_params(axis='y', labelcolor=ax2_color)
-
-        # plt.show()
-
-        ###############################################################
-        # PLOTLY VERSION
-
-        # fig = px.line(x=xaxis, y=yaxis, labels={'x':'Turn', 'y':'Losses (Total)'})
-        # fig.show()
-
-        fig = psubs.make_subplots(specs=[[{'secondary_y': True}]])
-
-        fig.add_trace(
+        self.loss_fig.add_trace(
             go.Scatter(x=xaxis, y=yaxis, name='Losses (Total)'),
             secondary_y=False
         )
 
-        fig.add_trace(
+        self.loss_fig.add_trace(
             go.Scatter(x=xaxis, y=delta, name='Losses (Per Turn)'),
             secondary_y=True
         )
 
-        fig.update_xaxes(title_text='Turn')
-        fig.update_yaxes(title_text='Losses (Total)', secondary_y=False)
-        fig.update_yaxes(title_text='Losses (Per Turn)', secondary_y=True)
-        fig.show()
-
-
-        ###############################################################
-        # EMBED IN APP
-        # self.loss_canvas = tkagg.FigureCanvasTkAgg(self.loss_fig, master=self.frame_scen_graph)
-        # self.loss_canvas.draw()
-        # self.loss_canvas.get_tk_widget().grid(row=0, column=0, sticky=tk.W)
-
-
-
+        self.loss_fig.update_xaxes(title_text='Turn')
+        self.loss_fig.update_yaxes(title_text='Losses (Total)', secondary_y=False)
+        self.loss_fig.update_yaxes(title_text='Losses (Per Turn)', secondary_y=True)
+        self.loss_fig.show()
         
 
     # Recursive function that adds all the formations/units
