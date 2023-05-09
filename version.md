@@ -1,3 +1,7 @@
+**Version 0.04**
+* Restarting the project.
+* Removed the binary and reverted the project to just source.
+
 **Version 0.03**
 * Adds the ability to graph scenario losses using matplotlib. 
 
