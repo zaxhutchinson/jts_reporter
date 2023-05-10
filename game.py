@@ -49,8 +49,10 @@ class ScenData:
 
 
 class Game:
-    def __init__(self, directory, side):
-        self.directory = directory
+    def __init__(self, config, side):
+        self.config = config
+        self.oob_dir = config.GetCfg('general','oob_dir')
+        self.save_dir = config.GetCfg('general','save_dir')
         self.scenario_name = None
         self.map_filename = None
         self.oob_filename = None
@@ -66,8 +68,7 @@ class Game:
     def ReadGameFiles(self):
         lg.debug("GAME: Loading game files")
 
-        abspath = os.path.abspath(self.directory)
-        #print(abspath)
+        abspath = os.path.abspath(self.save_dir)
 
         save_files = []
 
@@ -75,9 +76,8 @@ class Game:
             for entry in it:
                 if entry.is_file():
                     file_extension = entry.name[-4:]
-                    if file_extension=='.oob':
-                        self.oob = oob.OOB(entry.path, self.side)
-                    elif file_extension=='.btl':
+
+                    if file_extension=='.btl':
                         save_files.append(
                             (entry.name[:-4],entry.path)
                         )
@@ -89,6 +89,9 @@ class Game:
             sdata = self.ReadBtlFile(f[0], fileh)
             self.scen_data[f[0]]=sdata
             fileh.close()
+
+        if self.oob_filename:
+            self.oob = oob.OOB(f"{self.oob_dir}\\{self.oob_filename}",self.side)
                     
     def ReadBtlFile(self, fname, fileh):
         sdata = {}

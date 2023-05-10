@@ -10,7 +10,6 @@ import display
 def main():
     #----------------------------------
     # VARIABLES
-    gamedir = None
     mygame = None
     
     #----------------------------------
@@ -54,15 +53,12 @@ def main():
 
     #-----------------------------------
     # Load game files we have a directory
-    if gamedir:
-        mygame = game.Game(gamedir, side)
+    game_dir = config.GetCfg('general','game_dir')
+    if game_dir:
+        mygame = game.Game(config, side)
     else:
-        gamedir = config.GetCfg('general','save_dir')
-        if gamedir:
-            mygame = game.Game(gamedir, side)
-        else:
-            logging.error("MAIN: missing game directory")
-            print("Missing game directory.")
+        logging.error("MAIN: missing game directory")
+        print("Missing game directory.")
 
     #-----------------------------------
     # Start UI
